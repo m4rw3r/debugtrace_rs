@@ -1,5 +1,7 @@
 # Debugtrace
 
+[![Documentation](https://img.shields.io/badge/rustdoc-documentation-blue.svg)](http://m4rw3r.github.io/debugtrace_rs)
+
 This crate enables backtraces to be attached to values in `debug` and `test` builds without
 incurring a cost in `release` or `bench` builds.
 
