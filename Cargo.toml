@@ -1,0 +1,9 @@
+[package]
+name = "errortrace"
+version = "0.1.0"
+build = "build.rs"
+authors = ["Martin Wernstål <m4rw3r@gmail.com>"]
+
+[dependencies]
+# Cannot be optional due to build-script being incapable of enabling optional dependencies
+backtrace = { version = "0.1.8" }
