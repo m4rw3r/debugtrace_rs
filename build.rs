@@ -8,7 +8,7 @@ fn main() {
     };
 
     if enable_trace {
-        // We enable the stacktrace debug-logging here:
-        println!("cargo:rustc-cfg=feature=\"logtrace\"");
+        // We enable the stacktrace debug-printing here:
+        println!("cargo:rustc-cfg=feature=\"debug_print_trace\"");
     }
 }

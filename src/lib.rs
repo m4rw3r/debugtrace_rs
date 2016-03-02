@@ -1,8 +1,8 @@
 //!
 //!
 
-// If either the feature logtrace or backtrace is set, include features for tracing:
-#[cfg(any(feature="logtrace", feature="backtrace"))]
+// If either the feature debug_print_trace or backtrace is set, include features for tracing:
+#[cfg(any(feature="debug_print_trace", feature="backtrace"))]
 extern crate backtrace;
 
 /// Type-alias to make it easier to slot in tracing of errors:
@@ -14,7 +14,7 @@ pub use trace::Trace;
 #[cfg(feature="backtrace")]
 pub use trace::StackFrame;
 
-#[cfg(any(feature="logtrace", feature="backtrace"))]
+#[cfg(any(feature="debug_print_trace", feature="backtrace"))]
 mod trace {
     use std::fmt;
     use std::os::raw;
@@ -109,7 +109,7 @@ mod trace {
         /// data.
         ///
         /// ```
-        /// use errortrace::Trace;
+        /// use debugtrace::Trace;
         ///
         /// let t = Trace::new("my error");
         ///
@@ -185,7 +185,7 @@ mod trace {
     }
 }
 
-#[cfg(not(any(feature="logtrace", feature="backtrace")))]
+#[cfg(not(any(feature="debug_print_trace", feature="backtrace")))]
 mod trace {
     use std::fmt::{self, Debug};
     use std::ops::{Deref, DerefMut};
