@@ -183,8 +183,7 @@ mod trace {
 
     impl fmt::Debug for StackFrame {
         fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-            let n = self.line.map(|n| Cow::Owned(format!("{}", n)))
-                .unwrap_or(Cow::Borrowed("<unknown>"));
+            let n = self.line.map_or(Cow::Borrowed("<unknown>"), |n| Cow::Owned(format!("{}", n)));
 
             write!(f, "{:16p} - {} ({}:{})",
                 self.ip,
