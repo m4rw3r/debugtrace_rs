@@ -11,6 +11,14 @@ readme        = "README.md"
 repository    = "http://github.com/m4rw3r/debugtrace_rs"
 version       = "0.1.0"
 
+include = [
+    "src/**/*.rs",
+    ".gitignore",
+    "build.rs",
+    "README.md",
+    "Cargo.toml",
+]
+
 [dependencies]
 # Cannot be optional due to build-script being incapable of enabling optional dependencies
 backtrace = { version = "0.1.8" }
