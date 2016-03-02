@@ -28,6 +28,17 @@ mod trace {
     #[derive(Clone)]
     pub struct Trace<T>(T, Vec<*mut raw::c_void>);
 
+    /// Enables any error to automatically be wrapped in `Trace<E>` when `Result<T, E>` is used in
+    /// the `try!` macro.
+    impl<T> From<T> for Trace<T> {
+        #[inline(always)]
+        fn from(t: T) -> Self {
+            Trace::new(t)
+        }
+    }
+
+    /// Implementation of debug which debug-prints the inner type followed by the stacktrace to the
+    /// address where the `Trace` was created.
     impl<T: fmt::Debug> fmt::Debug for Trace<T> {
         fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
             try!(write!(f, "{:?} at\n", &self.0));
@@ -199,6 +210,15 @@ mod trace {
 
         #[inline(always)]
         pub fn unwrap(self) -> T { self.0 }
+    }
+
+    /// Enables any error to automatically be wrapped in `Trace<E>` when `Result<T, E>` is used in
+    /// the `try!` macro.
+    impl<T> From<T> for Trace<T> {
+        #[inline(always)]
+        fn from(t: T) -> Self {
+            Trace::new(t)
+        }
     }
 
     /// Implementation which only forwards to the internal type, making `Trace` invisible.
