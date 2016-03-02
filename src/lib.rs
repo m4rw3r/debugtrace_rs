@@ -1,11 +1,69 @@
+//! This crate enables backtraces to be attached to values in `debug` and `test` builds without
+//! incurring a cost in `release` or `bench` builds.
 //!
+//! It uses the selected build-profile to determine if backtraces should be collected. On `debug`
+//! and `test` backtraces are collected and will be printed if the value is printed using
+//! `fmt::Debug` (`{:?}`). In `release` and `bench` profiles `Trace` will only be a newtype wrapper
+//! making it zero-overhead.
 //!
+//! Note that this crate operates under the same restrictions that `backtrace` does which means that
+//! file and line-number information is not always available.
+//!
+//! # Installation
+//!
+//! ```toml
+//! [dependencies]
+//! debugtrace = "0.1.0"
+//! ```
+//!
+//! # Usage
+//!
+//! ```rust
+//! extern crate debugtrace;
+//!
+//! use debugtrace::Trace;
+//!
+//! fn foo() -> Trace<u32> {
+//!     Trace::new(123)
+//! }
+//!
+//! fn main () {
+//!     let e = foo();
+//!
+//!     println!("{:?}", e);
+//! }
+//! ```
+//!
+//! This will output something like the following when built with `debug` or `test` profiles:
+//!
+//! ```text
+//! 123 at
+//!    0       0x104f888d8 - foo::h83f9455bde0e24228Oe (src/main.rs:6)
+//!    1       0x104f8978b - main::hd70e3ccce038deb2gPe (src/main.rs:10)
+//!    2       0x104f9c312 - sys_common::unwind::try::try_fn::h4103587514840227558 (<unknown>:<unknown>)
+//!    3       0x104f9ab48 - __rust_try (<unknown>:<unknown>)
+//!    4       0x104f9c1b9 - rt::lang_start::h216753457f385fdaJCx (<unknown>:<unknown>)
+//!    5       0x104f8fb69 - main (<unknown>:<unknown>)
+//! ```
+//!
+//! When built using `release` or `bench` profiles it will not collect any backtrace and will only output:
+//!
+//! ```text
+//! 123
+//! ```
+//!
+//! # Features
+//!
+//! * `backtrace`:
+//!
+//!   This will force backtraces to be collected no matter what profile is used. It also includes
+//!   the `Trace::resolve()` method to programmatically obtain the stacktrace.
 
 // If either the feature debug_print_trace or backtrace is set, include features for tracing:
 #[cfg(any(feature="debug_print_trace", feature="backtrace"))]
 extern crate backtrace;
 
-/// Type-alias to make it easier to slot in tracing of errors:
+/// Type-alias to make it easier to slot in tracing of errors.
 pub type Result<T, E> = std::result::Result<T, Trace<E>>;
 
 pub use trace::Trace;
@@ -25,6 +83,11 @@ mod trace {
 
     use backtrace;
 
+    /// Wrapper type containing a value and the backtrace to the address where it was wrapped.
+    ///
+    /// It is transparent and forwards `Hash`, `PartialOrd`, `Ord`, `PartialEq` and `Eq` to the
+    /// wrapped type. `Deref` and `DerefMut` implementations are provided to make it somewhat easy
+    /// to work with the contained type.
     #[derive(Clone)]
     pub struct Trace<T>(T, Vec<*mut raw::c_void>);
 
@@ -94,7 +157,22 @@ mod trace {
     impl<T: Eq> Eq for Trace<T> {}
 
     impl<T> Trace<T> {
-        /// Creates a new stack-trace.
+        /// Creates a new stack-trace wrapping a value.
+        ///
+        /// ```
+        /// use debugtrace::Trace;
+        ///
+        /// fn foo() -> Trace<()> {
+        ///     Trace::new(())
+        /// }
+        ///
+        /// let t = foo();
+        ///
+        /// // Prints "() at:" followed by a backtrace in debug and test profiles
+        /// // Will also print the backtrace if the `backtrace` feature is on
+        /// // independent of profile
+        /// println!("{:?}", t);
+        /// ```
         // Inline never is required to accurately obtain a trace
         #[inline(never)]
         pub fn new(t: T) -> Self {
